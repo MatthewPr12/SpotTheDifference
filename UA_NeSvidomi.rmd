@@ -12,12 +12,14 @@ authors: Sviatoslav Lushnei, Yaroslav Korch, Matvii Prytula
 weekly_by_streams = read.csv("joined_by_streams/joined_by_streams.csv")
 head(weekly_by_streams)
 ```
+
 ```{r}
 weekly_by_quantity = read.csv("joined_by_quantity/joined_by_quantity.csv")
 head(weekly_by_quantity)
 ```
 
 ### Plot the data
+
 ```{r}
 library(ggplot2)
 library(reshape2)
@@ -39,12 +41,44 @@ plot_lang <- function(df, title){
 plot_lang(weekly_by_quantity, "Quantities")
 ```
 
-
-
 Type any R code in the chunk, for example:
 
 ```{r}
 plot_lang(weekly_by_streams, "Streams")
+```
+
+# Task2
+
+## Compare average time before the full-scale invasion and after
+
+### Split the data
+
+```{r}
+quant_before = subset(weekly_by_quantity, week < "2022-02-24")
+quant_after = subset(weekly_by_quantity, week >= "2022-02-24")
+
+streams_before = subset(weekly_by_streams, week < "2022-02-24")
+streams_after = subset(weekly_by_streams, week >= "2022-02-24")
+```
+
+We include **24.02.2022** into subset of those charts after the full-scale invasion because it started nearly 4:00 am, therefore, we suppose that Ukrainians did not listen that much music from 00:00 till 04:00
+
+```{r}
+UA_quant_before = quant_before["UA"]
+EN_quant_before = quant_before["EN"]
+RU_quant_before = quant_before["RU"]
+
+UA_quant_after = quant_after["UA"]
+EN_quant_after = quant_after["EN"]
+RU_quant_after = quant_after["RU"]
+
+UA_streams_before = streams_before["UA"]
+EN_streams_before = streams_before["EN"]
+RU_streams_before = streams_before["RU"]
+
+UA_streams_after = streams_after["UA"]
+EN_streams_after = streams_after["EN"]
+RU_streams_after = streams_after["RU"]
 ```
 
 Now, click the **Run** button on the chunk toolbar to [execute](https://www.jetbrains.com/help/pycharm/r-markdown.html#run-r-code) the chunk code. The result should be placed under the chunk. Click the **Knit and Open Document** to build and preview an output.
