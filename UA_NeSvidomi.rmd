@@ -29,7 +29,9 @@ plot_lang <- function(df, title){
   scale_x_discrete(guide = guide_axis(check.overlap=TRUE))+
   theme(axis.text.x = element_text(angle = 90)) + 
   geom_point(aes(colour = lang)) + geom_line(aes(colour=lang)) + 
-    labs(title = title)
+    labs(title = title) +
+         geom_vline(xintercept=44,
+                linetype=4, colour="black")
 }
 ```
 
