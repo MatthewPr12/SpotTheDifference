@@ -24,6 +24,11 @@ head(weekly_by_quantity)
 ### Plotting the data
 
 ```{r}
+weekly_by_streams_perc = read.csv("joined_by_streams/joined_by_streams_perc.csv")
+head(weekly_by_streams_perc)
+```
+### Plot the data
+```{r}
 plot_lang <- function(df, title){
   df <- melt(df , id.vars = 'week', variable.name = 'lang')
   ggplot(df, aes(week, value, group=lang)) + 
@@ -58,7 +63,7 @@ Plotting the number of songs in Top 200:
 ```{r}
 before_war_ua <- before_war[3] # UA songs
 
-ggplot(before_war_ua, aes(x = UA)) + 
+ggplot(before_war_ua, aes(x = UA)) +
 geom_histogram(col="black", aes(y = after_stat(density))) +
 geom_density(col = "red", size=1)
 
@@ -90,3 +95,48 @@ cat("The received p-value:", p_val, "\n")
 ```
 
 As can be seen, one can not reject the Null hypothesis, yet as well as accept, since the p-value is not that large.
+```{r}
+plot_lang(weekly_by_streams_perc, "Streams percentage")
+```
+```{r}
+ru_asymp = 0
+perc_after_RU <- weekly_by_quantity$RU[weekly_by_streams_perc$week > "2022-02-24"]
+ru_after_by_weeks <- (perc_after_RU - ru_asymp)
+ru_after_by_weeks <- ru_after_by_weeks[ru_after_by_weeks>0]
+
+
+
+X_ru <- (c(1:length(ru_after_by_weeks)))
+Y_ru <- (ru_after_by_weeks)
+ru_lmodel = lm(Y_ru ~ log(X_ru))
+summary(ru_lmodel)
+plot(c(1:length(ru_after_by_weeks)), ru_after_by_weeks)
+```
+
+
+```{r}
+ua_asymp = 0
+perc_after_UA <- weekly_by_streams$UA[weekly_by_streams_perc$week > "2022-02-24"]
+ua_after_by_weeks <- (perc_after_UA - ua_asymp)
+ua_after_by_weeks <- ua_after_by_weeks[ua_after_by_weeks>0]
+
+plot(c(1:length(ua_after_by_weeks)), ua_after_by_weeks)
+
+X_ua <- log(c(1:length(ua_after_by_weeks)))
+Y_ua <- log(ua_after_by_weeks)
+ua_lmodel = lm(X_ua ~ Y_ua)
+summary(ua_lmodel)
+```
+
+```{r}
+ua_corr_lmodel = lm(weekly_by_streams_perc$UA ~ weekly_by_quantity$UA)
+summary(ua_corr_lmodel)
+```
+```{r}
+ru_corr_lmodel = lm(weekly_by_streams_perc$RU ~ weekly_by_quantity$RU)
+summary(ru_corr_lmodel)
+```
+```{r}
+en_corr_lmodel = lm(weekly_by_streams_perc$EN ~ weekly_by_quantity$EN)
+summary(en_corr_lmodel)
+```
