@@ -22,18 +22,19 @@ head(weekly_by_quantity)
 library(ggplot2)
 library(reshape2)
 
-plot_lang <- function(df){
+plot_lang <- function(df, title){
   df <- df[, -1]
   df <- melt(df , id.vars = 'week', variable.name = 'lang')
   ggplot(df, aes(week, value, group=lang)) + 
   scale_x_discrete(guide = guide_axis(check.overlap=TRUE))+
   theme(axis.text.x = element_text(angle = 90)) + 
-  geom_point(aes(colour = lang)) + geom_line(aes(colour=lang))
+  geom_point(aes(colour = lang)) + geom_line(aes(colour=lang)) + 
+    labs(title = title)
 }
 ```
 
 ```{r}
-plot_lang(weekly_by_quantity)
+plot_lang(weekly_by_quantity, "Quantities")
 ```
 
 
@@ -41,7 +42,7 @@ plot_lang(weekly_by_quantity)
 Type any R code in the chunk, for example:
 
 ```{r}
-plot_lang(weekly_by_streams)
+plot_lang(weekly_by_streams, "Streams")
 ```
 
 Now, click the **Run** button on the chunk toolbar to [execute](https://www.jetbrains.com/help/pycharm/r-markdown.html#run-r-code) the chunk code. The result should be placed under the chunk. Click the **Knit and Open Document** to build and preview an output.
