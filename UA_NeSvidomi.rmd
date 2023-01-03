@@ -4,28 +4,27 @@ output: html_notebook
 authors: Sviatoslav Lushnei, Yaroslav Korch, Matvii Prytula
 ---
 
-# Task 1
-
-### Reading data
-
-```{r}
-weekly_by_streams = read.csv("joined_by_streams/joined_by_streams.csv")
-head(weekly_by_streams)
-```
-
-```{r}
-weekly_by_quantity = read.csv("joined_by_quantity/joined_by_quantity.csv")
-head(weekly_by_quantity)
-```
-
-### Plot the data
+# Reading the data
 
 ```{r}
 library(ggplot2)
 library(reshape2)
+```
 
+```{r}
+weekly_by_streams <- read.csv("joined_by_streams/joined_by_streams.csv")[, -1]
+head(weekly_by_streams)
+```
+
+```{r}
+weekly_by_quantity <- read.csv("joined_by_quantity/joined_by_quantity.csv")[, -1]
+head(weekly_by_quantity)
+```
+
+### Plotting the data
+
+```{r}
 plot_lang <- function(df, title){
-  df <- df[, -1]
   df <- melt(df , id.vars = 'week', variable.name = 'lang')
   ggplot(df, aes(week, value, group=lang)) + 
   scale_x_discrete(guide = guide_axis(check.overlap=TRUE))+
@@ -41,44 +40,53 @@ plot_lang <- function(df, title){
 plot_lang(weekly_by_quantity, "Quantities")
 ```
 
-Type any R code in the chunk, for example:
-
 ```{r}
 plot_lang(weekly_by_streams, "Streams")
 ```
 
-# Task2
+# Distribution of Ukrainian songs' rankings
 
-## Compare average time before the full-scale invasion and after
-
-### Split the data
+Splitting the data-frame in 2 parts:
 
 ```{r}
-quant_before = subset(weekly_by_quantity, week < "2022-02-24")
-quant_after = subset(weekly_by_quantity, week >= "2022-02-24")
-
-streams_before = subset(weekly_by_streams, week < "2022-02-24")
-streams_after = subset(weekly_by_streams, week >= "2022-02-24")
+before_war <- weekly_by_quantity[row.names(weekly_by_quantity) %in% 1:47, ]
+after_war <- weekly_by_quantity[row.names(weekly_by_quantity) %in% 48:nrow(weekly_by_quantity), ]
 ```
 
-We include **24.02.2022** into subset of those charts after the full-scale invasion because it started nearly 4:00 am, therefore, we suppose that Ukrainians did not listen that much music from 00:00 till 04:00
+Plotting the number of songs in Top 200:
 
 ```{r}
-UA_quant_before = quant_before["UA"]
-EN_quant_before = quant_before["EN"]
-RU_quant_before = quant_before["RU"]
+before_war_ua <- before_war[3] # UA songs
 
-UA_quant_after = quant_after["UA"]
-EN_quant_after = quant_after["EN"]
-RU_quant_after = quant_after["RU"]
+ggplot(before_war_ua, aes(x = UA)) + 
+geom_histogram(col="black", aes(y = after_stat(density))) +
+geom_density(col = "red", size=1)
 
-UA_streams_before = streams_before["UA"]
-EN_streams_before = streams_before["EN"]
-RU_streams_before = streams_before["RU"]
 
-UA_streams_after = streams_after["UA"]
-EN_streams_after = streams_after["EN"]
-RU_streams_after = streams_after["RU"]
+
 ```
 
-Now, click the **Run** button on the chunk toolbar to [execute](https://www.jetbrains.com/help/pycharm/r-markdown.html#run-r-code) the chunk code. The result should be placed under the chunk. Click the **Knit and Open Document** to build and preview an output.
+By looking at the plot one can assume that Ukrainian songs in Top 200 are geometrically distributed.
+
+One can not check this using the Kolmogorov-Smirnov test since this is a discrete distribution rather than a continuous one. Instead, one can use a Chi-Square Goodness-of-Fit Test.
+
+$$
+H_0  - the \ data \ is \ drawn \ from \ a \ geometric \ distribution. \\
+H_1 - not \ from \ a \ geometric \ distribution.
+$$
+
+To apply a Chi-Square test, expected probabilities have to be known. By finding the mean of the sample, one can estimate the parameter of the distribution.
+
+```{r}
+list_before_war_ua <- as.list(before_war_ua)$UA
+parameter <- 1 / mean(list_before_war_ua)
+
+p_val <- 0
+for (i in 1:20){
+  p_val <- p_val + chisq.test(list_before_war_ua, rgeom(length(list_before_war_ua), parameter), simulate.p.value = TRUE)$p.value
+}
+p_val <- p_val / 20
+cat("The received p-value:", p_val, "\n")
+```
+
+As can be seen, one can not reject the Null hypothesis, yet as well as accept, since the p-value is not that large.
