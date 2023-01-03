@@ -1,23 +1,47 @@
 ---
 title: "R Notebook"
 output: html_notebook
+authors: Sviatoslav Lushnei, Yaroslav Korch, Matvii Prytula
 ---
 
-The [R plugin](https://www.jetbrains.com/help/pycharm/r-plugin-support.html) for IntelliJ-based IDEs provides
-handy capabilities to work with the [R Markdown](https://www.jetbrains.com/help/pycharm/r-markdown.html) files.
-To [add](https://www.jetbrains.com/help/pycharm/r-markdown.html#add-code-chunk) a new R chunk,
-position the caret at any line or the code chunk, then click "+".
+# Task 1
 
-The code chunk appears:
+### Reading data
+
 ```{r}
-
+weekly_by_streams = read.csv("joined_by_streams/joined_by_streams.csv")
+head(weekly_by_streams)
 ```
+```{r}
+weekly_by_quantity = read.csv("joined_by_quantity/joined_by_quantity.csv")
+head(weekly_by_quantity)
+```
+
+### Plot the data
+```{r}
+library(ggplot2)
+library(reshape2)
+
+plot_lang <- function(df){
+  df <- df[, -1]
+  df <- melt(df , id.vars = 'week', variable.name = 'lang')
+  ggplot(df, aes(week, value, group=lang)) + 
+  scale_x_discrete(guide = guide_axis(check.overlap=TRUE))+
+  theme(axis.text.x = element_text(angle = 90)) + 
+  geom_point(aes(colour = lang)) + geom_line(aes(colour=lang))
+}
+```
+
+```{r}
+plot_lang(weekly_by_quantity)
+```
+
+
 
 Type any R code in the chunk, for example:
+
 ```{r}
-mycars <- within(mtcars, { cyl <- ordered(cyl) })
-mycars
+plot_lang(weekly_by_streams)
 ```
 
-Now, click the **Run** button on the chunk toolbar to [execute](https://www.jetbrains.com/help/pycharm/r-markdown.html#run-r-code) the chunk code. The result should be placed under the chunk.
-Click the **Knit and Open Document** to build and preview an output.
+Now, click the **Run** button on the chunk toolbar to [execute](https://www.jetbrains.com/help/pycharm/r-markdown.html#run-r-code) the chunk code. The result should be placed under the chunk. Click the **Knit and Open Document** to build and preview an output.
